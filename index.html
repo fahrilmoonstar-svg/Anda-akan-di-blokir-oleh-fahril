@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FAHRIL — Cari & Blokir Teman Palsu</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;500;700&display=swap');
+
+    :root {
+      --neon-cyan: #00f0ff;
+      --neon-purple: #d000ff;
+      --neon-yellow: #fff000;
+      --dark-bg: #050508;
+      --card-bg: rgba(10, 10, 20, 0.7);
+      --neon-red: #ff2a6d;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Rajdhani', sans-serif;
+      background: var(--dark-bg);
+      color: #fff;
+      min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
+      padding: 2rem 1rem;
+    }
+
+    .grid-bg {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: 
+        linear-gradient(90deg, rgba(0,240,255,0.05) 1px, transparent 1px),
+        linear-gradient(rgba(0,240,255,0.05) 1px, transparent 1px);
+      background-size: 60px 60px;
+      z-index: -2;
+      animation: gridMove 20s linear infinite;
+    }
+    @keyframes gridMove {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(60px); }
+    }
+
+    .glow-orb {
+      position: fixed;
+      width: 400px; height: 400px;
+      border-radius: 50%;
+      filter: blur(100px);
+      opacity: 0.15;
+      z-index: -3;
+    }
+    .orb-1 { top: -100px; right: -100px; background: var(--neon-purple); }
+    .orb-2 { bottom: -100px; left: -100px; background: var(--neon-cyan); }
+
+    .container { max-width: 600px; margin: 0 auto; position: relative; z-index: 1; }
+
+    .header-badge { text-align: center; margin-bottom: 2rem; }
+    .tagline-top {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.9rem;
+      color: var(--neon-cyan);
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      animation: blink-fast 0.8s infinite;
+    }
+    @keyframes blink-fast {
+      0%,100% { opacity: 1; }
+      50% { opacity: 0.2; }
+    }
+    @keyframes blink-med {
+      0%,100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    @keyframes flicker {
+      0%,100% { opacity: 1; transform: translateX(0); }
+      32% { opacity: 0.8; transform: translateX(-2px); }
+      33% { opacity: 1; transform: translateX(2px); }
+      62% { opacity: 0.7; transform: translateX(3px); }
+      63% { opacity: 1; transform: translateX(-1px); }
+    }
+
+    h1 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 2.5rem;
+      font-weight: 900;
+      margin: 1rem 0;
+      background: linear-gradient(90deg, var(--neon-cyan), var(--neon-purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: 2px;
+      animation: flicker 5s infinite;
+    }
+
+    .main-card {
+      background: var(--card-bg);
+      border: 1px solid rgba(0,240,255,0.3);
+      border-radius: 12px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      position: relative;
+    }
+
+    .corner {
+      position: absolute; width: 20px; height: 20px;
+      border-color: var(--neon-cyan); border-style: solid;
+    }
+    .corner-tl { top: 10px; left: 10px; border-width: 2px 0 0 2px; }
+    .corner-tr { top: 10px; right: 10px; border-width: 2px 2px 0 0; }
+    .corner-bl { bottom: 10px; left: 10px; border-width: 0 0 2px 2px; }
+    .corner-br { bottom: 10px; right: 10px; border-width: 0 2px 2px 0; }
+
+    .text-block {
+      font-size: 1.4rem; line-height: 2; text-align: center; font-weight: 500;
+    }
+    .neon-line {
+      color: var(--neon-cyan);
+      text-shadow: 0 0 10px var(--neon-cyan);
+      animation: blink-med 1.5s infinite;
+    }
+    .neon-pink {
+      color: var(--neon-purple);
+      text-shadow: 0 0 10px var(--neon-purple);
+      animation: blink-fast 2s infinite;
+    }
+    .neon-red-blink {
+      color: var(--neon-red);
+      text-shadow: 0 0 10px var(--neon-red);
+      animation: blink-fast 1s infinite;
+    }
+    .divider {
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--neon-cyan), transparent);
+      margin: 1rem 0; border: none;
+    }
+    .highlight-name {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      color: var(--neon-yellow);
+      text-shadow: 0 0 15px var(--neon-yellow);
+      animation: blink-med 2s infinite;
+    }
+
+    .name-input-container {
+      margin: 1.5rem 0;
+      text-align: center;
+    }
+    .name-input-label {
+      color: var(--neon-yellow);
+      font-family: 'Orbitron', sans-serif;
+      margin-bottom: 0.5rem;
+      display: block;
+    }
+    .name-input {
+      background: rgba(0,0,0,0.5);
+      border: 1px solid var(--neon-yellow);
+      color: #fff;
+      padding: 0.8rem 1rem;
+      border-radius: 6px;
+      font-size: 1rem;
+      text-align: center;
+      width: 100%;
+      max-width: 300px;
+      outline: none;
+      box-shadow: 0 0 10px rgba(255,240,0,0.2);
+    }
+    .name-input:focus { box-shadow: 0 0 20px rgba(255,240,0,0.4); }
+
+    .start-btn-container { text-align: center; margin: 1.5rem 0; }
+    .start-btn {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.2rem;
+      font-weight: 700;
+      padding: 1rem 2.5rem;
+      background: transparent;
+      border: 2px solid var(--neon-yellow);
+      color: var(--neon-yellow);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 0 15px rgba(255,240,0,0.3);
+      letter-spacing: 2px;
+    }
+    .start-btn:hover {
+      background: rgba(255,240,0,0.15);
+      box-shadow: 0 0 25px rgba(255,240,0,0.6);
+      transform: scale(1.05);
+    }
+    .start-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+    .quiz-area {
+      display: none;
+      margin-top: 2rem;
+      padding: 2rem;
+      background: var(--card-bg);
+      border: 1px solid var(--neon-yellow);
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(255,240,0,0.2);
+    }
+    .quiz-area h3 {
+      text-align: center;
+      color: var(--neon-yellow);
+      margin-bottom: 1.5rem;
+      font-family: 'Orbitron', sans-serif;
+    }
+    .question {
+      margin-bottom: 1.2rem;
+      padding: 1rem;
+      border-left: 3px solid var(--neon-cyan);
+    }
+    .question p { margin-bottom: 0.5rem; font-weight: 600; }
+    .options label {
+      display: block;
+      padding: 0.6rem;
+      margin: 0.4rem 0;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .options label:hover:not(.disabled) {
+      border-color: var(--neon-cyan);
+      background: rgba(0,240,255,0.05);
+    }
+    .options label.disabled {
+      cursor: not-allowed;
+      opacity: 0.7;
+      background: rgba(42,42,58,0.5);
+    }
+    .submit-quiz {
+      margin-top: 1rem;
+      width: 100%;
+      padding: 0.8rem;
+      background: transparent;
+      border: 1px solid var(--neon-purple);
+      color: var(--neon-purple);
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1rem;
+      transition: all 0.3s;
+    }
+    .submit-quiz:hover {
+      background: rgba(208,0,255,0.1);
+      box-shadow: 0 0 15px rgba(208,0,255,0.3);
+    }
+    .submit-quiz:disabled { opacity: 0.4; cursor: not-allowed; }
+    .result {
+      margin-top: 1.5rem;
+      text-align: center;
+      font-size: 1.2rem;
+      display: none;
+      padding-top: 1rem;
+      border-top: 1px solid rgba(255,255,255,0.1);
+    }
+    .score-big {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 2rem;
+      color: var(--neon-yellow);
+      text-shadow: 0 0 15px var(--neon-yellow);
+      margin: 0.5rem 0;
+    }
+    .leaderboard {
+      background: var(--card-bg);
+      border: 1px solid rgba(208,0,255,0.3);
+      border-radius: 12px;
+      padding: 2rem;
+      margin-top: 2rem;
+    }
+    .leaderboard h2 {
+      font-family: 'Orbitron', sans-serif;
+      text-align: center;
+      font-size: 1.3rem;
+      color: var(--neon-purple);
+      margin-bottom: 1rem;
+      letter-spacing: 2px;
+      animation: blink-med 2.5s infinite;
+    }
+    .refresh-btn {
+      margin: 0.5rem 0 1rem;
+      background: transparent;
+      border: 1px solid var(--neon-cyan);
+      color: var(--neon-cyan);
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      width: 100%;
+    }
+    .refresh-btn:hover { background: rgba(0,240,255,0.1); }
+    table { width: 100%; border-collapse: collapse; }
+    th {
+      color: var(--neon-cyan);
+      padding: 0.7rem 0.5rem;
+      text-align: left;
+      font-size: 0.9rem;
+      border-bottom: 1px solid rgba(0,240,255,0.2);
+    }
+    td {
+      padding: 0.7rem 0.5rem;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .rank-1 { color: var(--neon-yellow); font-weight: 700; }
+    .rank-2 { color: #ccc; }
+    .rank-3 { color: #cd7f32; }
+    .score { text-align: right; font-family: 'Orbitron', sans-serif; }
+    .locked-note {
+      margin-top: 1rem;
+      font-size: 0.85rem;
+      color: #888;
+      text-align: center;
+    }
+    .kirim-sukses {
+      color: #0f0;
+      text-align: center;
+      margin-top: 0.5rem;
+      display: none;
+    }
+
+    @media (max-width: 480px) {
+      h1 { font-size: 1.8rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="grid-bg"></div>
+  <div class="glow-orb orb-1"></div>
+  <div class="glow-orb orb-2"></div>
+
+  <div class="container">
+    <div class="header-badge">
+      <p class="tagline-top">SYSTEM ONLINE</p>
+      <h1>FAHRIL</h1>
+    </div>
+
+    <div class="main-card">
+      <div class="corner corner-tl"></div>
+      <div class="corner corner-tr"></div>
+      <div class="corner corner-bl"></div>
+      <div class="corner corner-br"></div>
+
+      <div class="text-block">
+        <span class="neon-line">AKU BAKAL</span><br>
+        <span class="neon-pink">CARI & BLOKIR</span><br>
+        <span class="neon-line">TEMAN PALSUKU</span>
+        <hr class="divider">
+        <div>
+          KAMU BAKAL<br>
+          <span class="neon-red-blink">DIBLOKIR?</span><br>
+          SAMA <span class="highlight-name">FAHRIL</span>?
+        </div>
+      </div>
+
+      <div class="name-input-container">
+        <label class="name-input-label">MASUKKAN NAMAMU DULU 👇</label>
+        <input type="text" id="namaPemain" class="name-input" placeholder="Tulis nama di sini..." maxlength="20">
+      </div>
+    </div>
+
+    <div class="start-btn-container">
+      <button class="start-btn" id="startBtn" disabled>▶ MULAI KUIS</button>
+    </div>
+
+    <div class="quiz-area" id="quizArea">
+      <h3>📋 TES PENGETAHUAN — FAHRIL</h3>
+      <p style="text-align:center; color:#aaa; margin-bottom:1rem; font-size:0.9rem;">⚠️ Jawaban tidak bisa diubah setelah dikirim!</p>
+
+      <div class="question">
+        <p>1. Fahril paling banyak menghabiskan uang untuk apa? 💸</p>
+        <div class="options">
+          <label><input type="radio" name="q1" value="a"> 🎮 Game</label>
+          <label><input type="radio" name="q1" value="b"> 🍜 Makanan</label>
+        </div>
+      </div>
+
+      <div class="question">
+        <p>2. Apa kartun atau anime favorit Fahril? 📺</p>
+        <div class="options">
+          <label><input type="radio" name="q2" value="a"> Jujutsu Kaisen</label>
+          <label><input type="radio" name="q2" value="b"> Upin Ipin</label>
+        </div>
+      </div>
+
+      <div class="question">
+        <p>3. Biasanya Fahril nge-chat gimana? 📱</p>
+        <div class="options">
+          <label><input type="radio" name="q3" value="a"> Satu pesan panjang</label>
+          <label><input type="radio" name="q3" value="b"> Banyak pesan beruntun</label>
+        </div>
+      </div>
+
+      <div class="question">
+        <p>4. Waktu kecil Fahril suka main apa?</p>
+        <div class="options">
+          <label><input type="radio" name="q4" value="a"> 🏸 Bulu tangkis</label>
+          <label><input type="radio" name="q4" value="b"> 🎯 Petak umpet</label>
+        </div>
+      </div>
+
+      <div class="question">
+        <p>5. Dulu, Fahril biasanya duduk di mana di kelas? 🏫</p>
+        <div class="options">
+          <label><input type="radio" name="q5" value="a"> Belakang</label>
+          <label><input type="radio" name="q5" value="b"> Depan</label>
+        </div>
+      </div>
+
+      <div class="question">
+        <p>6. Jajanan manis mana yang bakal dipilih Fahril? 🍬</p>
+        <div class="options">
+          <label><input type="radio" name="q6" value="a"> Kopiko</label>
+          <label><input type="radio" name="q6" value="b"> Big Babol</label>
+        </div>
+      </div>
+
+      <div class="question">
+        <p>7. Apa yang paling bikin Fahril takut? 😨</p>
+        <div class="options">
+          <label><input type="radio" name="q7" value="a"> 🎢 Roller Coaster</label>
+          <label><input type="radio" name="q7" value="b"> 💉 Suntikan</label>
+        </div>
+      </div>
+
+      <div class="question">
+        <p>8. Biasanya Fahril belajar buat ujian kapan? 📝</p>
+        <div class="options">
+          <label><input type="radio" name="q8" value="a"> 5 menit sebelumnya</label>
+          <label><input type="radio" name="q8" value="b"> Nggak belajar</label>
+        </div>
+      </div>
+
+      <div class="question">
+        <p>9. Apa dessert favorit Fahril? 🍰</p>
+        <div class="options">
+          <label><input type="radio" name="q9" value="a"> 🥥 Es teler</label>
+          <label><input type="radio" name="q9" value="b"> 🎂 Kue</label>
+        </div>
+      </div>
+
+      <div class="question">
+        <p>10. Fahril biasanya tidur dalam posisi apa? 💤</p>
+        <div class="options">
+          <label><input type="radio" name="q10" value="a"> Tengkurap</label>
+          <label><input type="radio" name="q10" value="b"> Miring</label>
+        </div>
+      </div>
+
+      <button class="submit-quiz" id="submitQuiz">✓ KIRIM JAWABAN</button>
+      <p class="kirim-sukses" id="kirimSukses">✅ Skor terkirim! Cek email kamu untuk lihat!</p>
+      <p class="locked-note" id="lockedNote" style="display:none;">🔒 Jawaban sudah dikunci — tidak bisa diubah</p>
+      
+      <div class="result" id="resultArea">
+        <p>Skor Kamu</p>
+        <p class="score-big"><span id="scoreResult">0</span>/10</p>
+        <p id="messageResult"></p>
+      </div>
+    </div>
+
+    <div class="leaderboard">
+      <h2>📊 PAPAN SKOR AGEN</h2>
+      <button class="refresh-btn" id="refreshPapan">🔄 Segarkan Papan Skor</button>
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>NAMA</th>
+            <th class="score">SKOR</th>
+          </tr>
+        </thead>
+        <tbody id="leaderBody">
+          <tr><td class="rank-1">01</td><td>FAHRIL ⭐</td><td class="score">10/10</td></tr>
+          <tr><td colspan="3" style="color:#666;text-align:center;">Klik tombol di atas untuk memuat...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    // ==============================================
+    // ✅ SUDAH DIISI OTOMATIS PAKAI KUNCI MILIKMU!
+    // ==============================================
+    const ACCESS_KEY = "554e4d6a-ccb9-4c6c-bb16-18ff6ae1bd1d";
+    // ==============================================
+
+    let namaPemain = '';
+    let sudahKirim = false;
+    let daftarSkor = [];
+
+    function muatSkorLokal() {
+      const simpanan = localStorage.getItem('fahril_skor_web3');
+      if (simpanan) daftarSkor = JSON.parse(simpanan);
+      tampilkanPapan();
+    }
+
+    function simpanSkorLokal() {
+      localStorage.setItem('fahril_skor_web3', JSON.stringify(daftarSkor));
+    }
+
+    function tambahSkor(nama, skor) {
+      daftarSkor.push({ nama, skor, waktu: Date.now() });
+      daftarSkor.sort((a, b) => b.skor - a.skor);
+      simpanSkorLokal();
+      tampilkanPapan();
+    }
+
+    function tampilkanPapan() {
+      const tbody = document.getElementById('leaderBody');
+      tbody.innerHTML = '<tr><td class="rank-1">01</td><td>FAHRIL ⭐</td><td class="score">10/10</td></tr>';
+      
+      daftarSkor.forEach((pemain, indeks) => {
+        const tr = document.createElement('tr');
+        const posisi = indeks + 2;
+        let kelas = '';
+        if (posisi === 2) kelas = 'rank-2';
+        else if (posisi === 3) kelas = 'rank-3';
+        
+        tr.innerHTML = `
+          <td class="${kelas}">${String(posisi).padStart(2, '0')}</td>
+          <td>${pemain.nama}</td>
+          <td class="score">${pemain.skor}/10</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function kirimKeWeb3Forms(nama, skor) {
+      try {
+        await fetch('https://api.web3forms.com/submit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            access_key: ACCESS_KEY,
+            nama: nama,
+            skor: skor,
+            subject: `Skor Baru: ${nama} - ${skor}/10`
+          })
+        });
+        document.getElementById('kirimSukses').style.display = 'block';
+        tambahSkor(nama, skor);
+      } catch (err) {
+        console.log('Terkirim');
+        tambahSkor(nama, skor);
+      }
+    }
+
+    document.getElementById('refreshPapan').addEventListener('click', tampilkanPapan);
+
+    function playStartupSound() {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(440, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.15);
+        gain.gain.setValueAtTime(0, ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.15, ctx.currentTime + 0.05);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.4);
+      } catch (e) {}
+    }
+    window.addEventListener('load', () => {
+      muatSkorLokal();
+      document.body.addEventListener('click', playStartupSound, { once: true });
+    });
+
+    const namaInput = document.getElementById('namaPemain');
+    const startBtn = document.getElementById('startBtn');
+    const quizArea = document.getElementById('quizArea');
+
+    namaInput.addEventListener('input', () => {
+      namaPemain = namaInput.value.trim();
+      startBtn.disabled = namaPemain.length < 2;
+    });
+
+    startBtn.addEventListener('click', () => {
+      if (namaPemain.length < 2) return;
+      
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(600, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(300, ctx.currentTime + 0.1);
+        gain.gain.setValueAtTime(0.1, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.15);
+      } catch (e) {}
+
+      namaInput.disabled = true;
+      startBtn.style.display = 'none';
+      quizArea.style.display = 'block';
+      quizArea.scrollIntoView({ behavior: 'smooth' });
+    });
+
+    const kunci = {
+      q1: 'a', q2: 'a', q3: 'b', q4: 'a', q5: 'b',
+      q6: 'b', q7: 'b', q8: 'b', q9: 'a', q10: 'a'
+    };
+
+    const submitQuiz = document.getElementById('submitQuiz');
+    const resultArea = document.getElementById('resultArea');
+    const scoreResult = document.getElementById('scoreResult');
+    const messageResult = document.getElementById('messageResult');
+    const lockedNote = document.getElementById('lockedNote');
+
+    submitQuiz.addEventListener('click', () => {
+      if (sudahKirim) return;
+      sudahKirim = true;
+
+      document.querySelectorAll('.options label').forEach(lbl => lbl.classList.add('disabled'));
+      document.querySelectorAll('input[type="radio"]').forEach(inp => inp.disabled = true);
+      submitQuiz.disabled = true;
+      lockedNote.style.display = 'block';
+
+      let skor = 0;
+      for (let i = 1; i <= 10; i++) {
+        const pilih = document.querySelector(`input[name="q${i}"]:checked`);
+        if (pilih && pilih.value === kunci[`q${i}`]) skor++;
+      }
+
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain); gain.connect(ctx.destination);
+        if (skor >= 8) {
+          osc.frequency.setValueAtTime(523, ctx.currentTime);
+          osc.frequency.setValueAtTime(659, ctx.currentTime + 0.1);
+          osc.frequency.setValueAtTime(784, ctx.currentTime + 0.2);
+        } else if (skor >= 5) {
+          osc.frequency.setValueAtTime(400, ctx.currentTime);
+          osc.frequency.setValueAtTime(500, ctx.currentTime + 0.15);
+        } else {
+          osc.frequency.setValueAtTime(300, ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(200, ctx.currentTime + 0.3);
+        }
+        gain.gain.setValueAtTime(0.1, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.4);
+      } catch (e) {}
+
+      scoreResult.textContent = skor;
+      let pesan = '';
+      if (skor === 10) pesan = '🔥 SEMPURNA! Teman sejati!';
+      else if (skor >= 8) pesan = '😊 Luar biasa! Hampir sempurna!';
+      else if (skor >= 6) pesan = '👍 Bagus! Kenalan lagi sama Fahril ya!';
+      else if (skor >= 4) pesan = '😅 Lumayan, masih banyak yang bisa diketahui!';
+      else pesan = '🚫 Hati-hati... Kamu mungkin akan diblokir Fahril!';
+      
+      messageResult.textContent = pesan;
+      resultArea.style.display = 'block';
+
+      kirimKeWeb3Forms(namaPemain, skor);
+    });
+  </script>
+</body>
+</html>
